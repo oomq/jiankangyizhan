@@ -9,7 +9,7 @@ import requests
 import cv2
 import numpy as np
 
-browser=webdriver.Chrome("/usr/local/bin/chromedriver")#需要修改对应browser drive的路径
+browser=webdriver.Chrome("chromedriver")#需要修改对应browser drive的路径
 
 url="https://hk.sz.gov.cn:8118/userPage/login"
 browser.get(url)
@@ -17,12 +17,15 @@ browser.get(url)
 zhengjianleixing=Select(browser.find_element_by_id('select_certificate'))
 zhengjianleixing.select_by_value('2')
 
+
 zhengjianhaoma=browser.find_element_by_id('input_idCardNo')
-zhengjianhaoma.send_keys('you_ID')#需要在此输入通行证号码
+zhengjianhaoma.send_keys('')#需要在此输入通行证号码
 
 mima=browser.find_element_by_id('input_pwd')
-mima.send_keys('password')#需要在此输入密码
+mima.send_keys('')#需要在此输入密码
 
+# browser.find_element_by_xpath("//button[text()=\"確定\"]").click()
+browser.find_element_by_xpath('//div[@id="winLoginNotice"]/div/div/button').click()
 #验证码截取
 browser.get_screenshot_as_file('spider/screenshot.png')
 element = browser.find_element_by_id('img_verify')
@@ -39,6 +42,7 @@ ocr=ddddocr.DdddOcr()
 img=cv2.imread("spider/code.png")
 img2 = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 img2 = cv2.inRange(img2, lowerb=110, upperb=255)
+
 _,img_bytes=cv2.imencode('.png', img2)
 img_bytes=img_bytes.tobytes()
 res=ocr.classification(img_bytes)
@@ -47,8 +51,13 @@ print(res)
 yanzhengma=browser.find_element_by_id('input_verifyCode')
 yanzhengma.send_keys(res)
 
+# browser.find_element_by_xpath("//button[text()=\"確定\"]").click()
+
 browser.find_element_by_id('btn_login').click()
-browser.find_element_by_xpath("//button[text()=\"確定\"]").click()
+
+
+
+
 
 #get time by using taobao api，这一行之前的代码可以在10点前执行
 import json
@@ -57,6 +66,9 @@ from urllib.request import Request,urlopen
 import time
 browser.set_page_load_timeout(200)
 browser.set_script_timeout(200)
+browser.implicitly_wait(1)
+# browser.find_element_by_xpath("//button[text()=\"確定\"]").click()
+browser.find_element_by_xpath('//div[@id="winOrderNotice"]/div/div/button').click()
 url="http://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp"
 c=browser.get_cookies()
 cookies={}
@@ -64,7 +76,7 @@ for cookie in c:
     cookies[cookie['name']]=cookie['value']
 #print(cookies)
 head={
-    'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.80 Safari/537.36' 
+    'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.80 Safari/537.36'
 }
 while 1==1:
     r=Request(url)
@@ -74,7 +86,7 @@ while 1==1:
     timeArray=time.localtime(int(data[149:162])/1000)
     jsTime=time.strftime("%Y-%m-%d %H:%M:%S",timeArray)
     nowTime=jsTime[11:19]
-    if nowTime=="10:00:00":
+    if nowTime=="22:28:00":
         browser.find_element_by_id('a_canBookHotel').click()
         element=WebDriverWait(browser,120,0.1).until(
             EC.presence_of_element_located((By.ID,"divSzArea"))
